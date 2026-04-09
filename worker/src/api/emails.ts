@@ -44,28 +44,35 @@ emailRoutes.get("/:id", async (c) => {
 
 emailRoutes.post("/:id/approve", async (c) => {
   const db = createDb(c.env.DB);
-  const email = await approveEmail(db, c.req.param("id"));
+  const email = await getEmailById(db, c.req.param("id"));
   if (!email) return c.json({ error: "Not found" }, 404);
 
-  // Always allow this sender (approves all their pending emails too)
+  // Allow sender and approve all their pending emails
   await allowSender(db, email.sender);
 
-  // Forward via Cloudflare send_email binding
+  // Fetch all emails from this sender that were just approved (status = "approved")
+  const senderEmails = (await getEmails(db, "approved")).filter(
+    (e) => e.sender === email.sender,
+  );
+
+  // Forward all of them
   const settings = await getSettings(db);
   const destination = c.env.DESTINATION_EMAIL || settings.destination_email;
 
   if (destination) {
-    const forwarded = await forwardEmail({
-      env: c.env,
-      to: destination,
-      from: email.toHeader,
-      subject: email.subject,
-      bodyPreview: email.bodyPreview || "",
-      originalFrom: email.fromHeader,
-      classification: email.classification,
-    });
-    if (forwarded) {
-      await markForwarded(db, email.id);
+    for (const e of senderEmails) {
+      const forwarded = await forwardEmail({
+        env: c.env,
+        to: destination,
+        from: e.toHeader,
+        subject: e.subject,
+        bodyPreview: e.bodyPreview || "",
+        originalFrom: e.fromHeader,
+        classification: e.classification,
+      });
+      if (forwarded) {
+        await markForwarded(db, e.id);
+      }
     }
   }
 
@@ -76,7 +83,7 @@ emailRoutes.post("/:id/approve", async (c) => {
     await hub.fetch(
       new Request("http://internal/notify", {
         method: "POST",
-        body: JSON.stringify({ type: "email_updated", email }),
+        body: JSON.stringify({ type: "sender_updated", address: email.sender, status: "allowed" }),
       }),
     );
   } catch {}
