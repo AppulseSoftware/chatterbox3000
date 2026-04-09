@@ -24,3 +24,11 @@ name = "SEND_EMAIL"
 # [[r2_buckets]]
 # binding = "RAW_EMAILS"
 # bucket_name = "email-gateway-raw"
+
+[observability]
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
