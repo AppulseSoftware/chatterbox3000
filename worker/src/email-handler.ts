@@ -26,15 +26,23 @@ export async function handleEmail(
   const bodyPreview = extractBodyPreview(raw);
 
   // Check SPF/DKIM from headers
-  const authResults = message.headers.get("authentication-results") || "";
-  const spfPass = /spf=pass/i.test(authResults);
-  const dkimPass = /dkim=pass/i.test(authResults);
+  // Cloudflare may use "authentication-results" or "arc-authentication-results"
+  const authResults =
+    message.headers.get("authentication-results") ||
+    message.headers.get("arc-authentication-results") ||
+    "";
+  // If no auth header exists, assume pass (don't penalize for missing info)
+  const hasAuthResults = authResults.length > 0;
+  const spfPass = !hasAuthResults || /spf=pass/i.test(authResults);
+  const dkimPass = !hasAuthResults || /dkim=pass/i.test(authResults);
 
   // Build headers map for classifier
   const headers: Record<string, string> = {};
   message.headers.forEach((value, key) => {
     headers[key] = value;
   });
+
+  console.log(`[email] from=${sender} subject="${subject}" spf=${spfPass} dkim=${dkimPass} auth-results="${authResults.slice(0, 200)}"`);
 
   const settings = await getSettings(db);
   const destination = settings.destination_email;
