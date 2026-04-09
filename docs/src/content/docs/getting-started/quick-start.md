@@ -12,7 +12,7 @@ description: Get Chatterbox3000 running in under 10 minutes.
 ## 1. Clone and install
 
 ```bash
-git clone https://github.com/your-org/chatterbox3000.git
+git clone https://github.com/AppulseSoftware/chatterbox3000.git
 cd chatterbox3000
 bun install
 ```

@@ -7,7 +7,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Chatterbox3000',
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/your-org/chatterbox3000' }],
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/AppulseSoftware/chatterbox3000' }],
 			sidebar: [
 				{
 					label: 'Getting Started',
