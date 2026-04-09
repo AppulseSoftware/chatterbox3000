@@ -1,7 +1,29 @@
 {
-  "name": "Chatterbox3000",
-  "private": true,
-  "workspaces": ["worker", "extension", "docs"],
+  "name": "chatterbox3000",
+  "type": "module",
+  "workspaces": [
+    "worker",
+    "extension",
+    "docs"
+  ],
+  "repository": "https://github.com/AppulseSoftware/chatterbox3000",
+  "author": "Appulse Software B.V.",
+  "license": "MIT",
+  "homepage": "https://chatterbox3000.com",
+  "bugs": "https://github.com/AppulseSoftware/chatterbox3000/issues",
+  "keywords": [
+    "email",
+    "filter",
+    "approval",
+    "system",
+    "cloudflare",
+    "workers",
+    "d1",
+    "durable objects",
+    "websocket",
+    "chrome extension"
+  ],
+  "version": "0.0.1",
   "scripts": {
     "dev": "bun run dev:worker & bun run dev:extension & bun run dev:docs & wait",
     "dev:worker": "bun run --cwd worker dev",
