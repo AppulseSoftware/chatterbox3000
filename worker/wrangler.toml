@@ -1,0 +1,26 @@
+name = "email-gateway"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+
+[durable_objects]
+bindings = [
+  { name = "NOTIFICATION_HUB", class_name = "NotificationHub" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["NotificationHub"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "email-gateway"
+database_id = "08eede9c-587b-46e6-bc7d-3038653f3101"
+migrations_dir = "src/db/migrations"
+
+[[send_email]]
+name = "SEND_EMAIL"
+
+# Uncomment to enable R2 raw email storage
+# [[r2_buckets]]
+# binding = "RAW_EMAILS"
+# bucket_name = "email-gateway-raw"

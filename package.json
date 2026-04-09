@@ -1,0 +1,22 @@
+{
+  "name": "Chatterbox3000",
+  "private": true,
+  "workspaces": ["worker", "extension", "docs"],
+  "scripts": {
+    "dev": "bun run dev:worker & bun run dev:extension & bun run dev:docs & wait",
+    "dev:worker": "bun run --cwd worker dev",
+    "dev:extension": "bun run --cwd extension dev",
+    "dev:docs": "bun run --cwd docs dev",
+    "build": "bun run build:worker & bun run build:extension & bun run build:docs & wait",
+    "build:worker": "bun run --cwd worker deploy",
+    "build:extension": "bun run --cwd extension build",
+    "build:docs": "bun run --cwd docs build"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "wrangler": "^4.81.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "email-gateway-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:generate": "bunx drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply email-gateway --local",
+    "db:migrate:remote": "wrangler d1 migrations apply email-gateway --remote"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.39.0",
+    "hono": "^4.7.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250327.0",
+    "drizzle-kit": "^0.30.0",
+    "wrangler": "^4.0.0"
+  }
+}
