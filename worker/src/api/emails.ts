@@ -57,7 +57,7 @@ emailRoutes.post("/:id/approve", async (c) => {
 
   // Forward all of them
   const settings = await getSettings(db);
-  const destination = c.env.DESTINATION_EMAIL || settings.destination_email;
+  const destination = settings.destination_email;
 
   if (destination) {
     for (const e of senderEmails) {

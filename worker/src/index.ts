@@ -9,7 +9,6 @@ export interface Env {
   SEND_EMAIL: SendEmail;
   RAW_EMAILS?: R2Bucket;
   AUTH_TOKEN: string;
-  DESTINATION_EMAIL: string;
 }
 
 export default {

@@ -37,7 +37,7 @@ export async function handleEmail(
   });
 
   const settings = await getSettings(db);
-  const destination = env.DESTINATION_EMAIL || settings.destination_email;
+  const destination = settings.destination_email;
   const autoForward = settings.auto_forward_allowed === "true";
   const autoReject = settings.auto_reject_blocked === "true";
 
