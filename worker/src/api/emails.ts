@@ -3,9 +3,7 @@ import { createDb } from "../db/index.ts";
 import {
   getEmails,
   getEmailById,
-  approveEmail,
   rejectEmail,
-  markForwarded,
   bulkAction,
   getStats,
   getSettings,
@@ -14,7 +12,7 @@ import {
   allowSender,
   blockSender,
 } from "../services/storage.ts";
-import { forwardEmail } from "../services/forwarder.ts";
+import { forwardApprovedEmailRows } from "../services/approval-forward.ts";
 import { classify } from "../services/classifier.ts";
 import type { HonoEnv } from "./router.ts";
 
@@ -47,34 +45,9 @@ emailRoutes.post("/:id/approve", async (c) => {
   const email = await getEmailById(db, c.req.param("id"));
   if (!email) return c.json({ error: "Not found" }, 404);
 
-  // Allow sender and approve all their pending emails
-  await allowSender(db, email.sender);
-
-  // Fetch all emails from this sender that were just approved (status = "approved")
-  const senderEmails = (await getEmails(db, "approved")).filter(
-    (e) => e.sender === email.sender,
-  );
-
-  // Forward all of them
-  const settings = await getSettings(db);
-  const destination = settings.destination_email;
-
-  if (destination) {
-    for (const e of senderEmails) {
-      const forwarded = await forwardEmail({
-        env: c.env,
-        to: destination,
-        from: e.toHeader,
-        subject: e.subject,
-        bodyPreview: e.bodyPreview || "",
-        originalFrom: e.fromHeader,
-        classification: e.classification,
-      });
-      if (forwarded) {
-        await markForwarded(db, e.id);
-      }
-    }
-  }
+  // Allow sender, approve all their pending emails, forward those rows (not a capped global query)
+  const newlyApproved = await allowSender(db, email.sender);
+  await forwardApprovedEmailRows(db, c.env, newlyApproved);
 
   // Notify via Durable Object
   try {
@@ -111,6 +84,47 @@ emailRoutes.post("/:id/reject", async (c) => {
   } catch {}
 
   return c.json(email);
+});
+
+emailRoutes.post("/:id/retry-forward", async (c) => {
+  const db = createDb(c.env.DB);
+  const id = c.req.param("id");
+  const email = await getEmailById(db, id);
+  if (!email) return c.json({ error: "Not found" }, 404);
+  if (email.status !== "approved") {
+    return c.json({ error: "Only emails stuck in approved can be retried" }, 400);
+  }
+
+  const settings = await getSettings(db);
+  if (!settings.destination_email?.trim()) {
+    return c.json({ error: "Set destination email in settings first" }, 400);
+  }
+
+  await forwardApprovedEmailRows(db, c.env, [email]);
+  const updated = await getEmailById(db, id);
+  if (!updated || updated.status !== "forwarded") {
+    return c.json(
+      {
+        error:
+          "Forward did not complete. Check SEND_EMAIL binding, routing, and worker logs.",
+        email: updated ?? email,
+      },
+      502,
+    );
+  }
+
+  try {
+    const hubId = c.env.NOTIFICATION_HUB.idFromName("default");
+    const hub = c.env.NOTIFICATION_HUB.get(hubId);
+    await hub.fetch(
+      new Request("http://internal/notify", {
+        method: "POST",
+        body: JSON.stringify({ type: "email_updated", email: updated }),
+      }),
+    );
+  } catch {}
+
+  return c.json(updated);
 });
 
 // Simulate an incoming email for local testing
@@ -176,5 +190,8 @@ emailRoutes.post("/bulk", async (c) => {
   const db = createDb(c.env.DB);
   const body = await c.req.json<{ ids: string[]; action: "approve" | "reject" }>();
   const results = await bulkAction(db, body.ids, body.action);
+  if (body.action === "approve") {
+    await forwardApprovedEmailRows(db, c.env, results);
+  }
   return c.json(results);
 });

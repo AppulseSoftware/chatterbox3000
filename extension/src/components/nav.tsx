@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 const TABS = [
   { to: "/pending", label: "Pending" },
   { to: "/approved", label: "Approved" },
+  { to: "/forwarded", label: "Forwarded" },
   { to: "/rejected", label: "Rejected" },
   { to: "/spam", label: "Spam" },
   { to: "/senders", label: "Senders" },

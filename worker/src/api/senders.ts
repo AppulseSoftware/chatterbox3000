@@ -6,6 +6,7 @@ import {
   blockSender,
   resetSender,
 } from "../services/storage.ts";
+import { forwardApprovedEmailRows } from "../services/approval-forward.ts";
 import type { HonoEnv } from "./router.ts";
 
 export const senderRoutes = new Hono<HonoEnv>();
@@ -20,7 +21,8 @@ senderRoutes.get("/", async (c) => {
 senderRoutes.post("/:address/allow", async (c) => {
   const db = createDb(c.env.DB);
   const address = decodeURIComponent(c.req.param("address"));
-  await allowSender(db, address);
+  const newlyApproved = await allowSender(db, address);
+  await forwardApprovedEmailRows(db, c.env, newlyApproved);
 
   try {
     const hubId = c.env.NOTIFICATION_HUB.idFromName("default");

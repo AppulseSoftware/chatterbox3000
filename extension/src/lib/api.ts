@@ -75,6 +75,9 @@ export const api = {
   approveEmail: (id: string) =>
     request<Email>(`/api/emails/${id}/approve`, { method: "POST" }),
 
+  retryForwardEmail: (id: string) =>
+    request<Email>(`/api/emails/${id}/retry-forward`, { method: "POST" }),
+
   rejectEmail: (id: string) =>
     request<Email>(`/api/emails/${id}/reject`, { method: "POST" }),
 

@@ -133,7 +133,8 @@ export async function allowSender(db: Database, address: string) {
   return db
     .update(emails)
     .set({ status: "approved", actionedAt: sql`(datetime('now'))` })
-    .where(and(eq(emails.sender, address), eq(emails.status, "pending")));
+    .where(and(eq(emails.sender, address), eq(emails.status, "pending")))
+    .returning();
 }
 
 export async function blockSender(db: Database, address: string) {

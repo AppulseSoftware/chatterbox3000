@@ -3,6 +3,7 @@ import { RootComponent } from "./routes/__root.tsx";
 import { IndexComponent } from "./routes/index.tsx";
 import { PendingComponent } from "./routes/pending.tsx";
 import { ApprovedComponent } from "./routes/approved.tsx";
+import { ForwardedComponent } from "./routes/forwarded.tsx";
 import { RejectedComponent } from "./routes/rejected.tsx";
 import { SendersComponent } from "./routes/senders.tsx";
 import { SpamComponent } from "./routes/spam.tsx";
@@ -26,6 +27,12 @@ const approvedRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/approved",
   component: ApprovedComponent,
+});
+
+const forwardedRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/forwarded",
+  component: ForwardedComponent,
 });
 
 const rejectedRoute = createRoute({
@@ -56,6 +63,7 @@ export const routeTree = rootRoute.addChildren([
   indexRoute,
   pendingRoute,
   approvedRoute,
+  forwardedRoute,
   rejectedRoute,
   spamRoute,
   sendersRoute,

@@ -3,12 +3,12 @@ import { useState } from "react";
 import { api } from "../lib/api.ts";
 import { EmailCard } from "../components/email-card.tsx";
 
-export function ApprovedComponent() {
+export function ForwardedComponent() {
   const [search, setSearch] = useState("");
 
   const { data: emails, isLoading } = useQuery({
-    queryKey: ["emails", "approved"],
-    queryFn: () => api.getEmails("approved"),
+    queryKey: ["emails", "forwarded"],
+    queryFn: () => api.getEmails("forwarded"),
   });
 
   const filtered = emails?.filter(
@@ -23,7 +23,7 @@ export function ApprovedComponent() {
     <div className="space-y-2">
       <input
         type="text"
-        placeholder="Search approved emails..."
+        placeholder="Search forwarded emails..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -32,11 +32,9 @@ export function ApprovedComponent() {
       {isLoading ? (
         <div className="text-center text-sm text-gray-500 py-8">Loading...</div>
       ) : !filtered?.length ? (
-        <div className="text-center text-sm text-gray-500 py-8">No approved emails</div>
+        <div className="text-center text-sm text-gray-500 py-8">No forwarded emails yet</div>
       ) : (
-        filtered.map((email) => (
-          <EmailCard key={email.id} email={email} showRetryForward />
-        ))
+        filtered.map((email) => <EmailCard key={email.id} email={email} />)
       )}
     </div>
   );

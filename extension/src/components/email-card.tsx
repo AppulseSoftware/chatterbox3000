@@ -17,10 +17,12 @@ export function EmailCard({
   email,
   showActions = false,
   showUndo = false,
+  showRetryForward = false,
 }: {
   email: Email;
   showActions?: boolean;
   showUndo?: boolean;
+  showRetryForward?: boolean;
 }) {
   const queryClient = useQueryClient();
 
@@ -40,7 +42,13 @@ export function EmailCard({
     onSuccess: invalidateAll,
   });
 
-  const isPending = approve.isPending || reject.isPending;
+  const retryForward = useMutation({
+    mutationFn: () => api.retryForwardEmail(email.id),
+    onSuccess: invalidateAll,
+  });
+
+  const isPending =
+    approve.isPending || reject.isPending || retryForward.isPending;
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-3 space-y-2">
@@ -97,6 +105,19 @@ export function EmailCard({
             className="px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 disabled:opacity-50"
           >
             Undo (Move to Pending)
+          </button>
+        </div>
+      )}
+
+      {showRetryForward && email.status === "approved" && (
+        <div className="pt-1 border-t border-gray-100">
+          <button
+            type="button"
+            onClick={() => retryForward.mutate()}
+            disabled={isPending}
+            className="px-2.5 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50"
+          >
+            Forward
           </button>
         </div>
       )}
